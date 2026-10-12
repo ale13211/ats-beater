@@ -1,45 +1,56 @@
-# ATS Beater — Resume Match Analyzer
+# ATS Beater
 
 [![Live demo](https://img.shields.io/badge/live%20demo-Vercel-black?logo=vercel)](https://ats-beater-ebon.vercel.app)
 [![API](https://img.shields.io/badge/API-Render-46E3B7?logo=render&logoColor=white)](https://ats-beater-api.onrender.com/api/health/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-ATS Beater is a full-stack application that compares resume content with a job description and produces a transparent skill-coverage report.
+**[Open the live demo →](https://ats-beater-ebon.vercel.app)**
 
-**[Try the live demo →](https://ats-beater-ebon.vercel.app)**
+## Why I built this
 
-## What it demonstrates
+I built ATS Beater to explore a practical problem: when a resume is compared with a job description, it should be possible to understand *why* the result looks the way it does.
 
-- React and TypeScript frontend with a responsive analysis dashboard.
-- Django REST Framework API with validation and a health endpoint.
-- PDF text extraction and pasted resume support.
-- Curated skill aliases for clearer matching, including technologies such as Python, Django, Docker, AWS and PostgreSQL.
-- Matched skills, missing skills, percentage score and actionable recommendations.
-- Dockerized local development and automated backend tests with pytest.
-- Separate production deployments: Vercel for the frontend and Render for the API.
+The application compares a resume with a job description and shows the recognized skills, potential gaps and the calculation behind the percentage. I intentionally kept the matching engine deterministic instead of presenting an opaque score as if it were a commercial ATS or a hiring prediction.
+
+## What I worked on
+
+- A React + TypeScript interface for entering resume and job-description content.
+- PDF text extraction, with pasted text as a simpler fallback.
+- A Django REST API with input validation and a health endpoint.
+- A small, explicit skill taxonomy with aliases such as `Postgres` → `PostgreSQL` and `unit testing` → `testing`.
+- A score based on recognized job skills found in the resume.
+- Matched skills, missing skills and recommendations based on the result.
+- A previous/current comparison in the same browser session.
+- Dockerized local development and backend tests with pytest.
+- A split deployment: Vercel for the frontend and Render for the API.
+
+## Technical decisions
+
+The core matching logic lives in `backend/analyzer/services.py`. It normalizes text, checks aliases with word boundaries and returns structured data for the frontend. Keeping this logic separate from the API view makes it easy to test and extend.
+
+I chose a transparent rule-based approach for this version because it is easier to explain, test and debug than a black-box score. The trade-off is that the current taxonomy does not understand every possible synonym or the quality of a resume bullet. A future version could add weighted phrases or an optional NLP layer while keeping the current result explanation visible to the user.
 
 ## How it works
 
 1. The user uploads a text-based PDF or pastes resume text.
 2. The user adds a job description.
-3. The API extracts and normalizes relevant skills.
-4. The dashboard presents the score, matched skills, missing skills and recommendations.
+3. The API extracts recognized skills from both texts.
+4. The frontend displays the score, matched skills, missing skills and recommendations.
 
-The score is intentionally transparent: it represents the percentage of recognized job-description skills found in the resume. This is a portfolio project and keyword-coverage tool, not a replica of proprietary ATS software and not a predictor of hiring outcomes.
+The score is calculated as:
+
+```text
+matched recognized job skills / total recognized job skills × 100
+```
+
+It is a keyword-coverage indicator for this project, not a prediction of interview invitations or hiring outcomes.
 
 ## Live deployment
 
 - Frontend: [ats-beater-ebon.vercel.app](https://ats-beater-ebon.vercel.app)
-- Backend health check: [ats-beater-api.onrender.com/api/health/](https://ats-beater-api.onrender.com/api/health/)
+- API health check: [ats-beater-api.onrender.com/api/health/](https://ats-beater-api.onrender.com/api/health/)
 
-The public demo uses SQLite on Render's free web service and processes uploaded resumes in memory. It does not persist resumes or analysis results. A production setup can use PostgreSQL by providing `DATABASE_URL`, plus rate limiting, monitoring, stronger file validation and a privacy policy.
-
-## Tech stack
-
-**Frontend:** React, TypeScript, Vite, CSS  
-**Backend:** Python, Django, Django REST Framework, pytest  
-**Deployment:** Vercel, Render, Docker, Gunicorn  
-**Optional production database:** PostgreSQL
+The public demo runs the backend on Render's free web service with SQLite. Resumes are processed in memory, and the demo does not persist resumes or analysis results. For a production setup, I would add PostgreSQL, rate limiting, monitoring, stronger file validation and a privacy policy.
 
 ## Run locally
 
@@ -53,7 +64,7 @@ docker compose up --build
 - API health: http://localhost:8000/api/health/
 - Analyze endpoint: `POST http://localhost:8000/api/analyze/`
 
-Load the example data in the UI and click **Analyze match** to see a complete result.
+Load the example data in the interface and click **Analyze match** to try the complete flow.
 
 ### Tests
 
@@ -76,16 +87,17 @@ The API also accepts `resume_file=@resume.pdf` instead of `resume_text`.
 ## Project structure
 
 ```text
-backend/     Django REST API, analysis engine and tests
+backend/     Django REST API, matching logic and tests
 frontend/    React + TypeScript interface
 render.yaml  Render deployment configuration
 ```
 
-## Scope and next steps
+## Next improvements
 
-Current scope includes English UI, text-based PDF extraction, pasted resume text, skill aliases, transparent scoring and in-session comparison.
-
-Potential next steps include bilingual support, weighted phrase extraction with spaCy, explicit-consent analysis history, browser E2E tests, rate limiting and production-grade file scanning.
+- Add bilingual UI and skill-taxonomy administration.
+- Support weighted phrases and seniority/context instead of only skill presence.
+- Add browser end-to-end tests and accessibility checks.
+- Add explicit-consent analysis history and production-grade file scanning.
 
 ## License
 
