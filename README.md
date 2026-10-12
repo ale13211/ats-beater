@@ -40,7 +40,11 @@ pytest -q
 
 ## Public demo deployment
 
-**Option:** Render PostgreSQL + Render Python web service + Vercel static frontend.
+**Option:** Render Python web service + Vercel static frontend.
+- The included `render.yaml` uses the app's SQLite fallback so the demo can run on
+  Render's free web service without requiring billing details. The analyzer does not
+  persist resumes or results. For a persistent production setup, add PostgreSQL and
+  set `DATABASE_URL` to its connection string.
 - Deploy backend with root directory `backend`, build `pip install -r requirements.txt`,
   start `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`.
 - Set `SECRET_KEY` (long random string), `DEBUG=false`, `ALLOWED_HOSTS` to backend hostname,
