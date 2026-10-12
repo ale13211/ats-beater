@@ -1,14 +1,49 @@
 # ATS Beater — Resume Match Analyzer
 
-A portfolio-ready full-stack MVP for comparing a resume with a job description.
-Built with **Django REST Framework, PostgreSQL, React, TypeScript, Docker**.
+[![Live demo](https://img.shields.io/badge/live%20demo-Vercel-black?logo=vercel)](https://ats-beater-ebon.vercel.app)
+[![API](https://img.shields.io/badge/API-Render-46E3B7?logo=render&logoColor=white)](https://ats-beater-api.onrender.com/api/health/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> This is an educational keyword coverage tool, **not** a replica of proprietary ATS software.
-> It does not predict interview invitations or hiring outcomes.
+ATS Beater is a full-stack application that compares resume content with a job description and produces a transparent skill-coverage report.
 
-## Quick start
+**[Try the live demo →](https://ats-beater-ebon.vercel.app)**
 
-Requires Docker and Docker Compose.
+## What it demonstrates
+
+- React and TypeScript frontend with a responsive analysis dashboard.
+- Django REST Framework API with validation and a health endpoint.
+- PDF text extraction and pasted resume support.
+- Curated skill aliases for clearer matching, including technologies such as Python, Django, Docker, AWS and PostgreSQL.
+- Matched skills, missing skills, percentage score and actionable recommendations.
+- Dockerized local development and automated backend tests with pytest.
+- Separate production deployments: Vercel for the frontend and Render for the API.
+
+## How it works
+
+1. The user uploads a text-based PDF or pastes resume text.
+2. The user adds a job description.
+3. The API extracts and normalizes relevant skills.
+4. The dashboard presents the score, matched skills, missing skills and recommendations.
+
+The score is intentionally transparent: it represents the percentage of recognized job-description skills found in the resume. This is a portfolio project and keyword-coverage tool, not a replica of proprietary ATS software and not a predictor of hiring outcomes.
+
+## Live deployment
+
+- Frontend: [ats-beater-ebon.vercel.app](https://ats-beater-ebon.vercel.app)
+- Backend health check: [ats-beater-api.onrender.com/api/health/](https://ats-beater-api.onrender.com/api/health/)
+
+The public demo uses SQLite on Render's free web service and processes uploaded resumes in memory. It does not persist resumes or analysis results. A production setup can use PostgreSQL by providing `DATABASE_URL`, plus rate limiting, monitoring, stronger file validation and a privacy policy.
+
+## Tech stack
+
+**Frontend:** React, TypeScript, Vite, CSS  
+**Backend:** Python, Django, Django REST Framework, pytest  
+**Deployment:** Vercel, Render, Docker, Gunicorn  
+**Optional production database:** PostgreSQL
+
+## Run locally
+
+### Docker
 
 ```bash
 docker compose up --build
@@ -16,9 +51,17 @@ docker compose up --build
 
 - Frontend: http://localhost:5173
 - API health: http://localhost:8000/api/health/
-- API endpoint: `POST http://localhost:8000/api/analyze/`
+- Analyze endpoint: `POST http://localhost:8000/api/analyze/`
 
-Click **Load example**, then **Analyze match**. Edit the CV and analyze again to compare scores.
+Load the example data in the UI and click **Analyze match** to see a complete result.
+
+### Tests
+
+```bash
+cd backend
+pip install -r requirements.txt
+pytest -q
+```
 
 ## API example
 
@@ -28,62 +71,22 @@ curl -X POST http://localhost:8000/api/analyze/ \
   -F 'job_description=Python Docker PostgreSQL Redis AWS'
 ```
 
-You can send `resume_file=@resume.pdf` instead of `resume_text`.
+The API also accepts `resume_file=@resume.pdf` instead of `resume_text`.
 
-## Testing
+## Project structure
 
-```bash
-cd backend
-pip install -r requirements.txt
-pytest -q
+```text
+backend/     Django REST API, analysis engine and tests
+frontend/    React + TypeScript interface
+render.yaml  Render deployment configuration
 ```
 
-## Public demo deployment
+## Scope and next steps
 
-**Option:** Render Python web service + Vercel static frontend.
-- The included `render.yaml` uses the app's SQLite fallback so the demo can run on
-  Render's free web service without requiring billing details. The analyzer does not
-  persist resumes or results. For a persistent production setup, add PostgreSQL and
-  set `DATABASE_URL` to its connection string.
-- Deploy backend with root directory `backend`, build `pip install -r requirements.txt`,
-  start `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`.
-- Set `SECRET_KEY` (long random string), `DEBUG=false`, `ALLOWED_HOSTS` to backend hostname,
-  `DATABASE_URL` to hosted PostgreSQL, `CORS_ALLOWED_ORIGINS` to your frontend HTTPS URL.
-- Deploy frontend with root directory `frontend`, build `npm run build`, output `dist`.
-- Set `VITE_API_URL` to `https://YOUR-BACKEND/api/analyze/` at **build time**.
-- Verify upload and sample analysis in the public URL. Free tiers and pricing change;
-  review provider terms before deploying.
+Current scope includes English UI, text-based PDF extraction, pasted resume text, skill aliases, transparent scoring and in-session comparison.
 
-The backend does **not** persist resumes. Uploaded files are processed in memory.
-For public use, add throttling, stronger file validation, monitoring, abuse prevention,
-a privacy policy, and resource limits. Scanned PDFs without a text layer are unsupported.
-
-## Current scope
-
-- PDF or pasted resume text; job description text.
-- Curated skill aliases and transparent percentage of job skills found in CV.
-- Matched/missing skill lists, actionable conditional recommendations.
-- Before/after comparison in current browser session (not persisted).
-- English UI and sample data.
-
-## Roadmap
-
-- Bilingual UI (English/Spanish), i18n.
-- spaCy-based phrase extraction and weighted skill scoring.
-- Optional account-based analysis history with explicit consent.
-- Accessibility audit and browser E2E tests.
-- Rate limiting and production-grade file scanning.
-
-## Portfolio pitch
-
-**ATS Beater** — Full-stack resume-to-job matching application using DRF,
-PostgreSQL, React and TypeScript. Built a transparent keyword matching engine,
-PDF extraction, responsive dashboard, automated CI tests and Dockerized development.
+Potential next steps include bilingual support, weighted phrase extraction with spaCy, explicit-consent analysis history, browser E2E tests, rate limiting and production-grade file scanning.
 
 ## License
 
 MIT
-
-## Deployment configuration included
-
-`render.yaml` defines a Render backend and PostgreSQL Blueprint; `frontend/vercel.json` configures Vercel frontend output. After deploying, set `ALLOWED_HOSTS` to the actual Render hostname, `CORS_ALLOWED_ORIGINS` to the actual Vercel origin and `VITE_API_URL` in Vercel to the complete Render API endpoint, then redeploy the frontend. Deployments are **not automatic** from this ZIP; they require connecting your GitHub account to the providers. See `PORTFOLIO_INTEGRATION.md` for a portfolio entry.
